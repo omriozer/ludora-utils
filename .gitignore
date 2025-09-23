@@ -1,0 +1,46 @@
+# Logs
+*.log
+logs/
+
+# Environment files (if any secrets end up here)
+.env
+.env.*
+!.env.example
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Node modules (if any utilities need npm)
+node_modules/
+
+# Backup files
+*.backup
+*.bak
+backup-*/
+
+# Database dumps
+*.sql
+*.dump
+
+# Archive files
+*.tar.gz
+*.zip
+*.rar
