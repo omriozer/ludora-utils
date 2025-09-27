@@ -106,87 +106,109 @@ Student invitation workflow for classroom enrollment.
 
 ## Product Entity Tables
 
-### workshop
-Educational workshop entity.
+The product system uses a normalized structure with a central `product` table containing common fields and type-specific tables for specialized data.
+
+### product
+Central product entity containing common fields for all product types.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | VARCHAR(255) | PRIMARY KEY | Workshop identifier |
+| id | VARCHAR(255) | PRIMARY KEY | Product identifier |
+| title | VARCHAR(255) | NOT NULL | Product title |
+| description | TEXT | | Product description |
+| category | VARCHAR(100) | | Product category |
+| product_type | VARCHAR(50) | NOT NULL | Product type (workshop, course, file, tool, game) |
+| price | DECIMAL(10,2) | DEFAULT 0 | Product price |
+| is_published | BOOLEAN | DEFAULT false | Published status |
+| image_url | VARCHAR(255) | | Product thumbnail image |
+| youtube_video_id | VARCHAR(255) | | YouTube video ID (nullable) |
+| youtube_video_title | VARCHAR(255) | | YouTube video title (nullable) |
+| tags | JSONB | DEFAULT '[]' | Product tags |
+| target_audience | VARCHAR(255) | | Target audience description |
+| access_days | DECIMAL | | Access duration in days (NULL = lifetime) |
+| is_sample | BOOLEAN | DEFAULT false | Sample/demo product flag |
+| creator_user_id | VARCHAR(255) | FK to user(id) | Product creator |
+| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
+| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
+
+**Relationships:**
+- product.creator_user_id → user.id (Many-to-One)
+- product → workshop (One-to-One via product_id)
+- product → course (One-to-One via product_id)
+- product → file (One-to-One via product_id)
+
+### workshop
+Workshop-specific data linked to product table.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | VARCHAR(255) | PRIMARY KEY | Workshop identifier (matches product.id) |
+| product_id | VARCHAR(255) | FK to product(id), NOT NULL | Product reference |
 | title | VARCHAR(255) | NOT NULL | Workshop title |
 | description | TEXT | | Workshop description |
+| workshop_type | VARCHAR(50) | NOT NULL | Workshop type (recorded, online_live) |
 | video_file_url | VARCHAR(255) | | Workshop video URL |
-| is_live | BOOLEAN | DEFAULT false | Live vs recorded workshop |
-| schedule_date | TIMESTAMP | | Scheduled date for live workshops |
+| scheduled_date | TIMESTAMP | | Scheduled date for live workshops |
+| meeting_link | VARCHAR(255) | | Meeting URL for live workshops |
+| meeting_password | VARCHAR(255) | | Meeting password |
+| meeting_platform | VARCHAR(50) | | Meeting platform (zoom, google_meet, etc.) |
+| max_participants | INTEGER | | Maximum participants |
 | duration_minutes | INTEGER | | Workshop duration |
 | creator_user_id | VARCHAR(255) | FK to user(id) | Workshop creator |
-| price | DECIMAL(10,2) | DEFAULT 0 | Workshop price |
-| is_published | BOOLEAN | DEFAULT false | Published status |
-| category | VARCHAR(100) | | Workshop category |
-| tags | JSONB | DEFAULT '[]' | Workshop tags |
-| settings | JSONB | DEFAULT '{}' | Workshop-specific settings |
 | created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
 | updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
 
 ### course
-Multi-module educational course entity.
+Course-specific data linked to product table.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | VARCHAR(255) | PRIMARY KEY | Course identifier |
+| id | VARCHAR(255) | PRIMARY KEY | Course identifier (matches product.id) |
+| product_id | VARCHAR(255) | FK to product(id), NOT NULL | Product reference |
 | title | VARCHAR(255) | NOT NULL | Course title |
 | description | TEXT | | Course description |
 | course_modules | JSONB | DEFAULT '[]' | Array of course modules |
 | total_duration_minutes | INTEGER | | Total course duration |
-| difficulty_level | VARCHAR(50) | | Course difficulty |
 | creator_user_id | VARCHAR(255) | FK to user(id) | Course creator |
-| price | DECIMAL(10,2) | DEFAULT 0 | Course price |
-| is_published | BOOLEAN | DEFAULT false | Published status |
-| category | VARCHAR(100) | | Course category |
-| tags | JSONB | DEFAULT '[]' | Course tags |
-| settings | JSONB | DEFAULT '{}' | Course-specific settings |
 | created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
 | updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
 
 ### file
-Digital file/download entity.
+File-specific data linked to product table.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | VARCHAR(255) | PRIMARY KEY | File identifier |
+| id | VARCHAR(255) | PRIMARY KEY | File identifier (matches product.id) |
+| product_id | VARCHAR(255) | FK to product(id), NOT NULL | Product reference |
 | title | VARCHAR(255) | NOT NULL | File title |
 | description | TEXT | | File description |
 | file_url | VARCHAR(255) | NOT NULL | File storage URL |
-| file_type | VARCHAR(100) | | File MIME type |
-| file_size | BIGINT | | File size in bytes |
-| download_count | INTEGER | DEFAULT 0 | Number of downloads |
+| file_type | VARCHAR(100) | | File type (pdf, ppt, docx, zip, other) |
+| preview_file_url | VARCHAR(255) | | Preview file URL |
+| file_is_private | BOOLEAN | DEFAULT true | File privacy setting |
+| preview_file_is_private | BOOLEAN | DEFAULT false | Preview file privacy |
+| downloads_count | INTEGER | DEFAULT 0 | Number of downloads |
 | creator_user_id | VARCHAR(255) | FK to user(id) | File creator |
-| price | DECIMAL(10,2) | DEFAULT 0 | File price |
-| is_published | BOOLEAN | DEFAULT false | Published status |
-| category | VARCHAR(100) | | File category |
-| tags | JSONB | DEFAULT '[]' | File tags |
-| settings | JSONB | DEFAULT '{}' | File-specific settings |
 | created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
 | updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
 
 ### tool
-Educational tool/application entity.
+Tool-specific data (reuses existing tool table structure).
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | VARCHAR(255) | PRIMARY KEY | Tool identifier |
+| product_id | VARCHAR(255) | FK to product(id) | Product reference (nullable for legacy tools) |
 | title | VARCHAR(255) | NOT NULL | Tool title |
 | description | TEXT | | Tool description |
 | tool_url | VARCHAR(255) | | External tool URL |
-| file_url | VARCHAR(255) | | Downloadable tool file |
-| tool_type | VARCHAR(100) | | Tool category type |
+| tool_config | JSONB | DEFAULT '{}' | Tool configuration |
+| access_type | VARCHAR(50) | | Tool access type |
 | creator_user_id | VARCHAR(255) | FK to user(id) | Tool creator |
-| price | DECIMAL(10,2) | DEFAULT 0 | Tool price |
-| is_published | BOOLEAN | DEFAULT false | Published status |
-| category | VARCHAR(100) | | Tool category |
-| tags | JSONB | DEFAULT '[]' | Tool tags |
-| settings | JSONB | DEFAULT '{}' | Tool-specific settings |
 | created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
 | updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | |
+
+**Note:** The `downloads_count` and `is_lifetime_access` fields have been removed from the product table. Lifetime access is now handled by setting `access_days` to NULL.
 
 ## Business Operation Tables
 
@@ -486,7 +508,14 @@ classroom (1) ←→ (M) classroom_membership
 user (1) ←→ (M) classroom_membership [student_user_id]
 
 user (1) ←→ (M) purchase [buyer_user_id]
+purchase (M) ←→ (1) product [product_id] (legacy)
 purchase (M) ←→ (1) [workshop|course|file|tool] [polymorphic]
+
+user (1) ←→ (M) product [creator_user_id]
+product (1) ←→ (1) workshop [product_id]
+product (1) ←→ (1) course [product_id]
+product (1) ←→ (1) file [product_id]
+tool (M) ←→ (1) product [product_id] (optional)
 
 user (1) ←→ (M) subscription_history
 subscription_history (M) ←→ (1) subscription_plan
