@@ -57,7 +57,9 @@ fi
 
 # Start PHP built-in server with Adminer
 echo "Starting Adminer on http://localhost:8082"
-echo "Use these connection details in Adminer:"
+echo "Auto-login URL: http://localhost:8082/?pgsql=$DB_HOST:$DB_PORT&username=$DB_USER&db=$DB_NAME"
+echo ""
+echo "Connection details (pre-filled):"
 echo "  System: PostgreSQL"
 echo "  Server: $DB_HOST:$DB_PORT"
 echo "  Username: $DB_USER"
@@ -67,7 +69,21 @@ echo "🚨 REMEMBER: This is PRODUCTION data!"
 echo "Press Ctrl+C to stop Adminer"
 echo ""
 
-# Start server (no auto-open browser for prod security)
-echo "Manually open http://localhost:8082 in your browser"
+# Build auto-login URL with pre-filled credentials
+AUTO_LOGIN_URL="http://localhost:8082/?pgsql=$DB_HOST:$DB_PORT&username=$DB_USER&db=$DB_NAME"
 
-cd tools && php -S localhost:8082 adminer.php
+# Start server and open browser with auto-login (after confirmations for security)
+echo "Opening browser with auto-login URL..."
+(sleep 3 && (open "$AUTO_LOGIN_URL" 2>/dev/null || echo "Open $AUTO_LOGIN_URL in your browser")) &
+
+# Get the script directory and navigate to tools
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TOOLS_DIR="$SCRIPT_DIR/../tools"
+
+if [ ! -f "$TOOLS_DIR/adminer.php" ]; then
+    echo "Error: adminer.php not found at $TOOLS_DIR/adminer.php"
+    echo "Please ensure adminer.php is in the tools directory"
+    exit 1
+fi
+
+cd "$TOOLS_DIR" && php -S localhost:8082 adminer.php
