@@ -21,6 +21,7 @@ DB_HOST=${DB_HOST:-localhost}
 DB_PORT=${DB_PORT:-5432}
 DB_NAME=${DB_NAME:-ludora_development}
 DB_USER=${DB_USER:-ludora_user}
+DB_PASSWORD=${DB_PASSWORD:-ludora_dev_pass}
 
 echo "Database connection info:"
 echo "  Host: $DB_HOST"
@@ -31,7 +32,7 @@ echo ""
 
 # Start PHP built-in server with Adminer
 echo "Starting Adminer on http://localhost:8080"
-echo "Auto-login URL: http://localhost:8080/?pgsql=$DB_HOST:$DB_PORT&username=$DB_USER&db=$DB_NAME"
+echo "Auto-login URL: http://localhost:8080/?pgsql=$DB_HOST:$DB_PORT&username=$DB_USER&db=$DB_NAME&password=$DB_PASSWORD"
 echo ""
 echo "Connection details (pre-filled):"
 echo "  System: PostgreSQL"
@@ -42,8 +43,8 @@ echo ""
 echo "Press Ctrl+C to stop Adminer"
 echo ""
 
-# Build auto-login URL with pre-filled credentials
-AUTO_LOGIN_URL="http://localhost:8080/?pgsql=$DB_HOST:$DB_PORT&username=$DB_USER&db=$DB_NAME"
+# Build auto-login URL with pre-filled credentials (including password)
+AUTO_LOGIN_URL="http://localhost:8080/?pgsql=$DB_HOST:$DB_PORT&username=$DB_USER&db=$DB_NAME&password=$DB_PASSWORD"
 
 # Start server and open browser with auto-login
 echo "Opening browser with auto-login URL..."
