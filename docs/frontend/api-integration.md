@@ -122,6 +122,8 @@ export const Purchase = new EntityAPI('purchase');
 export const SubscriptionPlan = new EntityAPI('subscriptionplan');
 export const Classroom = new EntityAPI('classroom');
 export const School = new EntityAPI('school');
+export const Coupon = new EntityAPI('coupon');
+export const Transaction = new EntityAPI('transaction');
 // ... and more
 ```
 
@@ -189,6 +191,180 @@ export async function loginWithFirebase({ idToken }) {
 if (typeof localStorage !== 'undefined') {
   authToken = localStorage.getItem('authToken');
 }
+```
+
+## Admin-Only API Integration
+
+### Coupon Management API Pattern
+
+The coupon management system uses a simplified API integration pattern that bypasses the EntityAPI for direct fetch calls with proper authentication:
+
+```javascript
+// Direct API integration pattern used in coupon components
+import { getApiBase } from '@/utils/api';
+
+// Get all coupons (admin only)
+const loadCoupons = async () => {
+  try {
+    const response = await fetch(`${getApiBase()}/entities/coupon`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch coupons');
+    }
+
+    const coupons = await response.json();
+    return coupons;
+  } catch (error) {
+    cerror('Error loading coupons:', error);
+    throw error;
+  }
+};
+
+// Create new coupon
+const createCoupon = async (couponData) => {
+  const response = await fetch(`${getApiBase()}/entities/coupon`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(couponData)
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to create coupon');
+  }
+
+  return response.json();
+};
+
+// Update existing coupon
+const updateCoupon = async (id, updates) => {
+  const response = await fetch(`${getApiBase()}/entities/coupon/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(updates)
+  });
+
+  return response.json();
+};
+```
+
+### Admin Authentication Pattern
+
+```javascript
+// Admin route protection using UserContext
+import { useUser } from '@/contexts/UserContext';
+import { isStaff } from '@/lib/userUtils';
+
+// Component-level admin check (handled by AdminRoute wrapper)
+export default function CouponComponent() {
+  const { currentUser, isLoading } = useUser();
+
+  // No manual admin checking - AdminRoute handles this
+  // Components focus on functionality only
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  // Component logic...
+}
+
+// Route-level protection in App.jsx
+<Route path='/coupons/*' element={
+  <AdminRoute>
+    <CouponComponent />
+  </AdminRoute>
+} />
+```
+
+### Error Handling with Hebrew Messages
+
+```javascript
+import { toast } from '@/components/ui/use-toast';
+import { clog, cerror } from '@/lib/utils';
+
+// Bilingual error handling pattern
+const handleCouponOperation = async (operation) => {
+  try {
+    const result = await operation();
+
+    // Success message in Hebrew for users
+    toast({
+      title: "פעולה הושלמה בהצלחה",
+      description: "הקופון עודכן במערכת",
+      variant: "default"
+    });
+
+    return result;
+  } catch (error) {
+    // Technical details for developers (English)
+    cerror('Coupon operation failed:', error);
+
+    // User-friendly message in Hebrew
+    toast({
+      title: "שגיאה בפעולה",
+      description: "לא ניתן לבצע את הפעולה. אנא נסה שוב.",
+      variant: "destructive"
+    });
+
+    throw error;
+  }
+};
+```
+
+### Analytics Data Integration
+
+```javascript
+// Combine multiple data sources for analytics
+const loadAnalyticsData = async () => {
+  try {
+    const [couponsResponse, transactionsResponse, purchasesResponse] = await Promise.all([
+      // Get all coupons for basic metrics
+      fetch(`${getApiBase()}/entities/coupon`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      }),
+
+      // Get transaction data for usage analytics
+      fetch(`${getApiBase()}/entities/transaction`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      }).catch(() => null), // Optional - may not exist in all setups
+
+      // Get purchase data with coupon metadata
+      fetch(`${getApiBase()}/entities/purchase`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      })
+    ]);
+
+    const coupons = await couponsResponse.json();
+    const transactions = transactionsResponse ? await transactionsResponse.json() : [];
+    const purchases = await purchasesResponse.json();
+
+    // Calculate analytics from combined data
+    return calculateCouponAnalytics(coupons, transactions, purchases);
+  } catch (error) {
+    cerror('Error loading analytics data:', error);
+    throw error;
+  }
+};
 ```
 
 ## Data Fetching Patterns
