@@ -723,7 +723,7 @@ POST /api/functions/createSignedUrl
 {
   "success": true,
   "data": {
-    "signedUrl": "https://storage.ludora.com/files/upload/document.pdf?token=...",
+    "signedUrl": "https://storage.ludora.com/files/upload/document.pdf?token=...", // this is wrong!
     "expiresAt": "2024-01-01T01:00:00.000Z"
   }
 }
@@ -1512,7 +1512,7 @@ POST /api/integrations/sendEmail
   "subject": "Welcome to Ludora",
   "html": "<h1>Welcome!</h1>",
   "text": "Welcome!",
-  "from": "noreply@ludora.com"
+  "from": "noreply@ludora.app"
 }
 ```
 
@@ -1547,7 +1547,7 @@ POST /api/integrations/uploadFile
   "success": true,
   "data": {
     "fileId": "file_id",
-    "url": "https://storage.ludora.com/files/file_id",
+    "url": "https://storage.ludora.com/files/file_id", // this is wrong!
     "fileName": "document.pdf",
     "size": 1048576,
     "mimeType": "application/pdf"
@@ -1626,7 +1626,7 @@ POST /api/integrations/generateImage
   "success": true,
   "data": {
     "imageId": "img_123456",
-    "url": "https://images.ludora.com/generated/123456.png",
+    "url": "https://images.ludora.com/generated/123456.png", // this is wrong!
     "prompt": "A cute cartoon cat",
     "size": "1024x1024",
     "generatedAt": "2024-01-01T00:00:00.000Z"

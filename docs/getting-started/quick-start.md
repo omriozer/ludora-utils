@@ -69,7 +69,7 @@ cd ludora-front && npm run dev
 
 ### Default Admin Account
 ```
-Email: admin@ludora.com
+Email: admin@ludora.app
 Password: admin123
 ```
 
