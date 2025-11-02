@@ -282,7 +282,6 @@ The backend uses AWS S3 for file storage:
 
 ```bash
 # Set S3 environment variables
-flyctl secrets set USE_S3=true -a ludora-api
 flyctl secrets set AWS_REGION=eu-central-1 -a ludora-api
 flyctl secrets set AWS_S3_BUCKET=ludora-files -a ludora-api
 flyctl secrets set AWS_ACCESS_KEY_ID="your-key" -a ludora-api
