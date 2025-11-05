@@ -1578,31 +1578,6 @@ POST /api/integrations/extractDataFromUploadedFile
 - `file` - File to analyze
 - `extractionType` - Type of extraction
 
-#### Create Signed URL
-
-```http
-POST /api/integrations/createFileSignedUrl
-```
-
-**Authentication**: Required
-**Request Body**:
-```json
-{
-  "fileName": "document.pdf",
-  "operation": "read",
-  "expiresIn": 3600,
-  "contentType": "application/pdf"
-}
-```
-
-### Image Generation
-
-#### Generate Image
-
-```http
-POST /api/integrations/generateImage
-```
-
 **Authentication**: Required
 **Rate Limit**: 100 requests per hour
 

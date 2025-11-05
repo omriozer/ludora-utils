@@ -208,7 +208,7 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        isIn: [['memory_game', 'scatter_game', 'wisdom_maze']]
+        isIn: [['memory_game', 'scatter_game']]
       }
     },
     game_settings: {
@@ -493,7 +493,7 @@ import { z } from 'zod';
 const gameSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
   description: z.string().optional(),
-  game_type: z.enum(['memory_game', 'scatter_game', 'wisdom_maze'])
+  game_type: z.enum(['memory_game', 'scatter_game'])
 });
 
 export const GameForm = ({
@@ -550,7 +550,6 @@ export const GameForm = ({
           <option value="">Select game type</option>
           <option value="memory_game">Memory Game</option>
           <option value="scatter_game">Scatter Game</option>
-          <option value="wisdom_maze">Wisdom Maze</option>
         </select>
         {errors.game_type && (
           <p className="mt-1 text-sm text-red-600">{errors.game_type.message}</p>

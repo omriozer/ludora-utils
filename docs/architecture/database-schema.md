@@ -304,7 +304,6 @@ Educational game entity with flexible JSONB settings.
 **Game Types:**
 - `memory_game` - Memory matching game
 - `scatter_game` - Spatial word/image placement
-- `wisdom_maze` - Quiz-based navigation
 - `sharp_and_smooth` - Audio discrimination
 - `ar_up_there` - AR vocabulary game
 
