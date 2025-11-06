@@ -1,9 +1,9 @@
 #!/bin/bash
-# Deploy Ludora API to Fly.io
+# Deploy Ludora API to Heroku
 
 set -e
 
-echo "🚀 Deploying Ludora API to Fly.io..."
+echo "🚀 Deploying Ludora API to Heroku..."
 
 # Find the ludora-api directory
 LUDORA_ROOT=""
@@ -23,47 +23,57 @@ fi
 # Change to API directory
 cd "$LUDORA_ROOT/ludora-api"
 
-# Check if flyctl is installed
-if ! command -v flyctl &> /dev/null; then
-    echo "❌ Error: flyctl is not installed"
-    echo "Install it with: brew install flyctl"
+# Check if heroku CLI is installed
+if ! command -v heroku &> /dev/null; then
+    echo "❌ Error: Heroku CLI is not installed"
+    echo "Install it from: https://devcenter.heroku.com/articles/heroku-cli"
     exit 1
 fi
 
 # Check if user is logged in
-if ! flyctl auth whoami &> /dev/null; then
-    echo "❌ Error: Not logged in to Fly.io"
-    echo "Login with: flyctl auth login"
+if ! heroku auth:whoami &> /dev/null; then
+    echo "❌ Error: Not logged in to Heroku"
+    echo "Login with: heroku login"
     exit 1
 fi
 
 # Parse command line arguments
-DETACH=false
-NO_CACHE=false
-LOCAL_ONLY=false
+APP="ludora-api-prod"
+RUN_MIGRATIONS=true
+FORCE_PUSH=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --detach|-d)
-            DETACH=true
+        --app|-a)
+            APP="$2"
+            shift 2
+            ;;
+        --staging)
+            APP="ludora-api-staging"
             shift
             ;;
-        --no-cache)
-            NO_CACHE=true
+        --no-migrate)
+            RUN_MIGRATIONS=false
             shift
             ;;
-        --local-only)
-            LOCAL_ONLY=true
+        --force|-f)
+            FORCE_PUSH=true
             shift
             ;;
         --help|-h)
             echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --detach, -d    Deploy in background"
-            echo "  --no-cache      Force rebuild without cache"
-            echo "  --local-only    Build locally instead of remote"
+            echo "  --app, -a NAME  Deploy to specific Heroku app (default: ludora-api-prod)"
+            echo "  --staging       Deploy to staging app (ludora-api-staging)"
+            echo "  --no-migrate    Skip database migrations after deployment"
+            echo "  --force, -f     Force push even if there are conflicts"
             echo "  --help, -h      Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  $0                    # Deploy to production"
+            echo "  $0 --staging          # Deploy to staging"
+            echo "  $0 --app my-app       # Deploy to specific app"
             exit 0
             ;;
         *)
@@ -74,40 +84,84 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Check if git is clean
+if [ "$FORCE_PUSH" = false ]; then
+    if ! git diff --quiet; then
+        echo "❌ Error: You have uncommitted changes"
+        echo "Commit your changes first, or use --force to deploy anyway"
+        exit 1
+    fi
+fi
+
+# Set up Heroku git remote if it doesn't exist
+REMOTE_NAME="heroku-$APP"
+if ! git remote | grep -q "^$REMOTE_NAME$"; then
+    echo "🔗 Adding Heroku remote: $REMOTE_NAME"
+    git remote add "$REMOTE_NAME" "https://git.heroku.com/$APP.git"
+fi
+
+# Get current branch
+CURRENT_BRANCH=$(git branch --show-current)
+echo "📦 Deploying branch '$CURRENT_BRANCH' to Heroku app '$APP'"
+
 # Build deploy command
-DEPLOY_CMD="flyctl deploy -a ludora-api"
-
-if [ "$DETACH" = true ]; then
-    DEPLOY_CMD="$DEPLOY_CMD --detach"
+if [ "$FORCE_PUSH" = true ]; then
+    DEPLOY_CMD="git push $REMOTE_NAME $CURRENT_BRANCH:main --force"
+else
+    DEPLOY_CMD="git push $REMOTE_NAME $CURRENT_BRANCH:main"
 fi
 
-if [ "$NO_CACHE" = true ]; then
-    DEPLOY_CMD="$DEPLOY_CMD --no-cache"
-fi
-
-if [ "$LOCAL_ONLY" = true ]; then
-    DEPLOY_CMD="$DEPLOY_CMD --local-only"
-fi
-
-echo "📦 Running: $DEPLOY_CMD"
+echo "🚀 Running: $DEPLOY_CMD"
 
 # Run the deployment
 eval $DEPLOY_CMD
 
 if [ $? -eq 0 ]; then
-    echo "✅ API deployment completed successfully!"
-    echo "🌐 URL: https://ludora-api.fly.dev"
+    echo "✅ Git push completed successfully!"
+    echo "⏳ Waiting for Heroku build to complete..."
+    sleep 30
+
+    # Run database migrations if requested
+    if [ "$RUN_MIGRATIONS" = true ]; then
+        echo "🗃️ Running database migrations..."
+        heroku run npm run migrate:prod --app "$APP"
+
+        if [ $? -eq 0 ]; then
+            echo "✅ Migrations completed successfully!"
+        else
+            echo "⚠️ Migrations failed, but deployment may still be successful"
+        fi
+    fi
+
+    # Health check
+    echo "🏥 Performing health check..."
+    if [ "$APP" = "ludora-api-staging" ]; then
+        HEALTH_URL="https://$APP.herokuapp.com/health"
+    else
+        HEALTH_URL="https://api.ludora.app/health"
+    fi
+
+    sleep 10
+    if curl -f "$HEALTH_URL" &> /dev/null; then
+        echo "✅ Health check passed!"
+    else
+        echo "⚠️ Health check failed - app may still be starting"
+    fi
+
+    echo ""
+    echo "🎉 API deployment completed successfully!"
+    echo "🌐 URL: $HEALTH_URL"
     echo ""
     echo "🔍 Check status with:"
-    echo "  flyctl status -a ludora-api"
+    echo "  heroku ps --app $APP"
     echo ""
     echo "📋 View logs with:"
-    echo "  flyctl logs -a ludora-api"
+    echo "  heroku logs --tail --app $APP"
     echo ""
-    echo "🏥 Health check:"
-    echo "  curl https://ludora-api.fly.dev/health"
+    echo "🏥 Manual health check:"
+    echo "  curl $HEALTH_URL"
 else
     echo "❌ Deployment failed!"
-    echo "📋 Check logs with: flyctl logs -a ludora-api"
+    echo "📋 Check logs with: heroku logs --tail --app $APP"
     exit 1
 fi

@@ -1,6 +1,6 @@
 # Ludora Management Scripts
 
-This directory contains management scripts for the Ludora platform deployed on Fly.io.
+This directory contains management scripts for the Ludora platform deployed on Firebase (frontend) and Heroku (API & database).
 
 ## Quick Start
 
@@ -147,20 +147,27 @@ This script provides a unified interface to all other scripts.
 
 ### Required Tools
 
-- **Fly.io CLI**: `brew install flyctl`
+- **Heroku CLI**: `brew install heroku`
+- **Firebase CLI**: `npm install -g firebase-tools`
 - **PostgreSQL Client**: `brew install postgresql`
 - **curl**: Usually pre-installed
 
 ### Authentication
 
-1. Login to Fly.io:
+1. Login to Heroku:
 ```bash
-flyctl auth login
+heroku login
 ```
 
-2. Verify access to Ludora apps:
+2. Login to Firebase:
 ```bash
-flyctl apps list
+firebase login
+```
+
+3. Verify access to apps:
+```bash
+heroku apps
+firebase projects:list
 ```
 
 ### Environment Variables
@@ -178,10 +185,10 @@ export PGPASSWORD="your-database-password"
 # Check current status
 ./scripts/ludora.sh health-check
 
-# Deploy API
+# Deploy API to Heroku
 ./scripts/ludora.sh deploy-api
 
-# Deploy frontend
+# Deploy frontend to Firebase
 ./scripts/ludora.sh deploy-frontend
 
 # Verify deployment
@@ -194,10 +201,10 @@ export PGPASSWORD="your-database-password"
 # Check overall status
 ./scripts/ludora.sh status
 
-# View logs for problematic service
+# View logs for API service
 ./scripts/ludora.sh logs api --follow
 
-# SSH into service for investigation
+# SSH into API server for investigation
 ./scripts/ludora.sh ssh-api
 
 # Run comprehensive health check
@@ -235,9 +242,9 @@ cd ludora-api && npm run db:migrate
 
 ## Application URLs
 
-- **Frontend**: https://ludora-front.fly.dev
-- **API**: https://ludora-api.fly.dev
-- **API Health**: https://ludora-api.fly.dev/health
+- **Frontend**: https://ludora.app
+- **API**: https://api.ludora.app/api
+- **API Health**: https://api.ludora.app/health
 
 ## File Structure
 
@@ -291,20 +298,24 @@ scripts/
 chmod +x scripts/*.sh
 ```
 
-**2. Fly.io Not Authenticated**
+**2. Heroku Not Authenticated**
 ```bash
-flyctl auth login
+heroku login
 ```
 
-**3. Database Connection Failed**
+**3. Firebase Not Authenticated**
 ```bash
-# Start database proxy first
-flyctl proxy 5433:5432 -a ludora-db &
+firebase login
+```
+
+**4. Database Connection Failed**
+```bash
+# Connect to Heroku Postgres
 export PGPASSWORD="your-password"
 ./scripts/ludora.sh connect-db
 ```
 
-**4. Script Not Found**
+**5. Script Not Found**
 ```bash
 # Run from project root directory
 cd /path/to/ludora
@@ -314,7 +325,7 @@ cd /path/to/ludora
 ### Getting Help
 
 1. Use `--help` flag on any script
-2. Check the comprehensive deployment guide in `/docs/fly-io-deployment-guide.md`
+2. Check the comprehensive deployment guide in `/docs/deployment-guide.md`
 3. View logs for specific services
 4. Run health checks to identify issues
 

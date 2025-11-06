@@ -51,7 +51,7 @@ You can also run scripts directly from any location:
 ludora-utils/
 ├── README.md                    # This file
 ├── docs/                        # Documentation
-│   └── fly-io-deployment-guide.md  # Comprehensive deployment guide
+│   └── deployment-guide.md      # Comprehensive deployment guide
 └── scripts/                     # Management scripts
     ├── README.md                # Scripts documentation
     ├── ludora.sh               # Main management interface
@@ -72,31 +72,38 @@ ludora-utils/
 
 The Ludora platform consists of:
 
-- **ludora-api**: Node.js backend API server
-- **ludora-front**: React/Vite frontend application
-- **ludora-db**: PostgreSQL database cluster
+- **ludora-api**: Node.js backend API server (deployed on Heroku)
+- **ludora-front**: React/Vite frontend application (deployed on Firebase)
+- **ludora-db**: PostgreSQL database (Heroku Postgres)
 - **ludora-utils**: This repository (shared utilities)
 
-All applications are deployed on Fly.io infrastructure.
+The platform is deployed on Firebase (frontend) and Heroku (API & database) infrastructure.
 
 ## Prerequisites
 
 ### Required Tools
 
-- **Fly.io CLI**: `brew install flyctl`
+- **Heroku CLI**: `brew install heroku`
+- **Firebase CLI**: `npm install -g firebase-tools`
 - **PostgreSQL Client**: `brew install postgresql`
 - **curl**: Usually pre-installed
 
 ### Authentication
 
-1. Login to Fly.io:
+1. Login to Heroku:
 ```bash
-flyctl auth login
+heroku login
 ```
 
-2. Verify access to Ludora apps:
+2. Login to Firebase:
 ```bash
-flyctl apps list
+firebase login
+```
+
+3. Verify access to apps:
+```bash
+heroku apps
+firebase projects:list
 ```
 
 ## Available Scripts
@@ -134,10 +141,10 @@ See `scripts/README.md` for detailed documentation on each script.
 # Check current status
 ./scripts/ludora.sh health-check
 
-# Deploy API changes
+# Deploy API to Heroku
 ./scripts/ludora.sh deploy-api
 
-# Deploy frontend changes
+# Deploy frontend to Firebase
 ./scripts/ludora.sh deploy-frontend
 
 # Verify deployment
@@ -153,7 +160,7 @@ See `scripts/README.md` for detailed documentation on each script.
 # View real-time logs
 ./scripts/ludora.sh logs api --follow
 
-# SSH for investigation
+# SSH for investigation (API only)
 ./scripts/ludora.sh ssh-api
 
 # Run health diagnostics
@@ -166,7 +173,7 @@ See `scripts/README.md` for detailed documentation on each script.
 # Create backup
 ./scripts/ludora.sh backup-db create
 
-# Connect to database
+# Connect to Heroku Postgres database
 ./scripts/ludora.sh connect-db
 
 # Manage environment variables
@@ -186,7 +193,7 @@ The scripts automatically detect the correct paths to `ludora-api` and `ludora-f
 
 Comprehensive documentation is available in the `docs/` directory:
 
-- **fly-io-deployment-guide.md**: Complete deployment and operations guide
+- **deployment-guide.md**: Complete deployment and operations guide for Firebase and Heroku
 - **scripts/README.md**: Detailed script documentation
 
 ## Development

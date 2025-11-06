@@ -1,14 +1,14 @@
 #!/bin/bash
-# Connect to Ludora PostgreSQL database
+# Connect to Ludora PostgreSQL database on Heroku
 
 set -e
 
 echo "🗄️  Connecting to Ludora Database..."
 
-# Check if flyctl is installed
-if ! command -v flyctl &> /dev/null; then
-    echo "❌ Error: flyctl is not installed"
-    echo "Install it with: brew install flyctl"
+# Check if heroku CLI is installed
+if ! command -v heroku &> /dev/null; then
+    echo "❌ Error: Heroku CLI is not installed"
+    echo "Install it from: https://devcenter.heroku.com/articles/heroku-cli"
     exit 1
 fi
 
