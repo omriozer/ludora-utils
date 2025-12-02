@@ -1,0 +1,26 @@
+{
+  "name": "eslint-plugin-ludora",
+  "version": "1.0.0",
+  "description": "Ludora-specific ESLint rules for enforcing data-driven caching and code quality",
+  "main": "index.js",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "ludora",
+    "caching",
+    "architecture"
+  ],
+  "author": "Ludora Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "eslint": ">=8.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "index.js",
+    "rules/"
+  ]
+}

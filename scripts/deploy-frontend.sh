@@ -93,14 +93,26 @@ done
 
 # Check environment configuration
 echo "🔧 Checking environment configuration..."
-if [ -f ".env.production" ]; then
-    echo "✅ Found .env.production"
-    grep "VITE_API_BASE" .env.production || echo "⚠️  VITE_API_BASE not found in .env.production"
+if [ "$STAGING" = true ]; then
+    if [ -f ".env.staging" ]; then
+        echo "✅ Found .env.staging"
+        grep "VITE_API_BASE" .env.staging || echo "⚠️  VITE_API_BASE not found in .env.staging"
+    else
+        echo "⚠️  No .env.staging found"
+        echo "Creating basic .env.staging file..."
+        echo "VITE_API_BASE=https://api-staging.ludora.app/api" > .env.staging
+        echo "✅ Created .env.staging with default values"
+    fi
 else
-    echo "⚠️  No .env.production found"
-    echo "Creating basic .env.production file..."
-    echo "VITE_API_BASE=https://api.ludora.app/api" > .env.production
-    echo "✅ Created .env.production with default values"
+    if [ -f ".env.production" ]; then
+        echo "✅ Found .env.production"
+        grep "VITE_API_BASE" .env.production || echo "⚠️  VITE_API_BASE not found in .env.production"
+    else
+        echo "⚠️  No .env.production found"
+        echo "Creating basic .env.production file..."
+        echo "VITE_API_BASE=https://api.ludora.app/api" > .env.production
+        echo "✅ Created .env.production with default values"
+    fi
 fi
 
 # Check Firebase configuration
@@ -116,7 +128,13 @@ if [ "$SKIP_BUILD" = false ]; then
     yarn install
 
     echo "🏗️ Building application..."
-    yarn build
+    if [ "$STAGING" = true ]; then
+        echo "Building for staging environment..."
+        yarn build:staging
+    else
+        echo "Building for production environment..."
+        yarn build
+    fi
 
     if [ $? -ne 0 ]; then
         echo "❌ Build failed!"
