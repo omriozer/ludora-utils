@@ -122,6 +122,14 @@ if [ ! -f "firebase.json" ]; then
     exit 1
 fi
 
+# Run environment validation before build/deploy
+echo "🔎 Validating frontend environment..."
+if [ "$STAGING" = true ]; then
+    yarn env:check-staging
+else
+    yarn env:check-prod
+fi
+
 # Build the application if not skipped
 if [ "$SKIP_BUILD" = false ]; then
     echo "📦 Installing dependencies..."
