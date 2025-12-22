@@ -17,7 +17,8 @@ module.exports = {
       orphanedCacheSet: 'Cache entry "{{key}}" is set but never retrieved.',
       orphanedCacheGet: 'Cache entry "{{key}}" is retrieved but never set.'
     },
-    fixable: 'code',
+    // Auto-fix disabled: removing cache keys requires verification that they're truly unused
+    // fixable: 'code',
     schema: []
   },
 

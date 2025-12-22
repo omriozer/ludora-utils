@@ -18,7 +18,8 @@ module.exports = {
       useMaxUpdatedAt: 'Use MAX(updated_at) from database for collection cache keys.',
       includeVersionInKey: 'Cache key "{{key}}" should include a data version for proper invalidation.'
     },
-    fixable: 'code',
+    // Auto-fix disabled: adding cache version parameters requires understanding data flow
+    // fixable: 'code',
     schema: []
   },
 
